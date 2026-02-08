@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block body_class %}allauth{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-16">
+    <div class="card">
+        {% block inner_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

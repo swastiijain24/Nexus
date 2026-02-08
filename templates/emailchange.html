@@ -1,9 +1,12 @@
-<form action="{% url 'emailchange' %}" method="post" class="flex gap-2 text-black" autocomplete="off">
+<form action="{% url 'emailchange' %}" method="post" class="flex gap-2" autocomplete="off">
     {% csrf_token %}
-    {% for field in form %}{{ field }}{% endfor %}
-    <button class="block !bg-gray-800" type="submit">Submit</button>
+    {% for field in form %}
+    <input type="email" name="{{ field.name }}" value="{{ field.value|default:'' }}" placeholder="Enter new email"
+        class="flex-1 !py-2 text-sm">
+    {% endfor %}
+    <button type="submit" class="btn btn-primary !py-2 text-sm">Save</button>
 </form>
 
-<a hx-swap-oob="true" id="email-edit" href="{% url 'profile-edit' %}" class="font-medium text-blue-600 hover:underline">
+<a hx-swap-oob="true" id="email-edit" href="{% url 'settings' %}" class="btn btn-ghost text-sm cursor-pointer">
     Cancel
 </a>

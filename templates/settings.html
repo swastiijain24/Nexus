@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - ChatApp{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-12">
+    <h1 class="text-2xl font-bold mb-8">Account Settings</h1>
+
+    <!-- Profile Section -->
+    <div class="card mb-6">
+        <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Profile
+        </h2>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+
+            <div class="flex items-center gap-4 mb-4">
+                <img id="avatar-preview" class="w-20 h-20 rounded-full object-cover ring-2 ring-zinc-700"
+                    src="{{ user.profile.profileimg.url }}" alt="Avatar">
+                <div>
+                    <label for="id_profileimg" class="!inline-block cursor-pointer">
+                        <span class="btn btn-secondary text-sm py-2">Change Photo</span>
+                    </label>
+                    <input type="file" name="profileimg" id="id_profileimg" accept="image/*" class="hidden"
+                        onchange="document.getElementById('avatar-preview').src = URL.createObjectURL(this.files[0])">
+                </div>
+            </div>
+
+            <div>
+                <label for="id_name">Display Name</label>
+                <input type="text" name="name" id="id_name" value="{{ user.profile.name|default:'' }}"
+                    placeholder="Your display name">
+            </div>
+
+            <div>
+                <label for="id_about">About</label>
+                <textarea name="about" id="id_about" rows="3"
+                    placeholder="Tell us about yourself...">{{ user.profile.about|default:'' }}</textarea>
+            </div>
+
+            <div class="pt-2">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Email Section -->
+    <div class="card mb-6">
+        <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Email Address
+        </h2>
+
+        <div class="flex items-center justify-between py-3 border-b border-zinc-800">
+            <div>
+                <p id="email-address" class="font-medium">
+                    {% if user.email %}{{ user.email }}{% else %}No email set{% endif %}
+                </p>
+                <p class="text-sm mt-1">
+                    {% if user.emailaddress_set.first.verified %}
+                    <span class="text-green-400 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Verified
+                    </span>
+                    {% else %}
+                    <span class="text-amber-400">Not verified</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="flex gap-2">
+                <a id="email-edit" class="btn btn-ghost text-sm cursor-pointer" hx-get="{% url 'emailchange' %}"
+                    hx-target="#email-address" hx-swap="innerHTML">
+                    Edit
+                </a>
+                {% if not user.emailaddress_set.first.verified %}
+                <a href="{% url 'emailverify' %}" class="btn btn-ghost text-sm text-indigo-400">
+                    Verify
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card border-red-900/50">
+        <h2 class="text-lg font-semibold mb-4 flex items-center gap-2 text-red-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            Danger Zone
+        </h2>
+
+        <div class="flex items-center justify-between py-3">
+            <div>
+                <p class="font-medium">Delete Account</p>
+                <p class="text-sm text-zinc-400">Once deleted, your account cannot be recovered.</p>
+            </div>
+            <button class="btn btn-danger text-sm">Delete Account</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
