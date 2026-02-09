@@ -3,9 +3,37 @@
 {% block body_class %}allauth{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto px-4 py-16">
-    <div class="card">
-        {% block inner_content %}{% endblock %}
+<div class="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <!-- Decorative Background Elements -->
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Auth Card Container - Fixed Width -->
+    <div class="w-full max-w-md relative z-10 mx-auto">
+        <!-- Logo & Branding -->
+        <div class="text-center mb-8">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/25 mb-4">
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+                Welcome to Nexus
+            </h1>
+            <p class="text-zinc-500 mt-2">Connect, chat, and share with friends</p>
+        </div>
+
+        <!-- Card with Form Content - Overflow Hidden -->
+        <div
+            class="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-800/50 shadow-2xl shadow-black/50 p-8 overflow-hidden">
+            <div class="w-full">
+                {% block inner_content %}{% endblock %}
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}

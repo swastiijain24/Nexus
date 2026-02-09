@@ -1,68 +1,200 @@
 {% extends 'base.html' %}
 
-{% block title %}Chat{% endblock %}
+{% block title %}{% if chat_group.groupchat_name %}{{ chat_group.groupchat_name }}{% elif other_user %}{{
+other_user.username }}{% else %}Public Chat{% endif %} - Nexus{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto my-10 px-6">
-    <div id="chat_window"
-        class="h-[45rem] flex flex-col bg-zinc-900 rounded-2xl border border-zinc-800 shadow-2xl relative overflow-hidden">
-        {% if other_user %}
+<div class="flex h-[calc(100vh-4rem)]">
 
-        <div class="flex items-end gap-2 max-w-[75%]">
-            <a href="/profile/{{ other_user.username }}/" class="flex-shrink-0">
-                <img class="w-8 h-8 rounded-full object-cover ring-2 ring-zinc-700"
-                    src="{{ other_user.profile.profileimg.url }}" alt="Avatar">
+    <!-- Sidebar - Conversations List -->
+    <aside class="w-72 bg-zinc-900 border-r border-zinc-800 flex flex-col flex-shrink-0">
+        <!-- Sidebar Header -->
+        <div class="p-4 border-b border-zinc-800">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-semibold">Chats</h2>
+                <div class="flex gap-2">
+                    <a href="{% url 'newgrpchat' %}" class="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+                        title="New Group">
+                        <svg class="w-5 h-5 text-zinc-400 hover:text-white" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat List -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- Public Chat -->
+            <a href="{% url 'home' %}"
+                class="flex items-center gap-3 p-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 {% if chatroom_name == 'public-chat' %}bg-zinc-800{% endif %}">
+                <div
+                    class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium truncate">Public Chat</p>
+                    <p class="text-xs text-zinc-500 truncate">Everyone can join</p>
+                </div>
+            </a>
+
+            <!-- User's Chat Groups -->
+            {% for group in user_chat_groups %}
+            {% if group.groupname != 'public-chat' %}
+            <a href="{% url 'chat' group.groupname %}"
+                class="flex items-center gap-3 p-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 {% if chatroom_name == group.groupname %}bg-zinc-800{% endif %}">
+                {% if group.is_private %}
+                <!-- Private Chat - Show other user's avatar -->
+                {% for member in group.group_members.all %}
+                {% if member != user %}
+                <img src="{{ member.profile.profileimg.url }}"
+                    class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                {% endif %}
+                {% endfor %}
+                <div class="flex-1 min-w-0">
+                    {% for member in group.group_members.all %}
+                    {% if member != user %}
+                    <p class="font-medium truncate">{{ member.profile.name|default:member.username }}</p>
+                    <p class="text-xs text-zinc-500 truncate">@{{ member.username }}</p>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <!-- Group Chat -->
+                <div
+                    class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium truncate">{{ group.groupchat_name }}</p>
+                    <p class="text-xs text-zinc-500 truncate">{{ group.group_members.count }} members</p>
+                </div>
+                {% endif %}
+            </a>
+            {% endif %}
+            {% empty %}
+            <div class="p-4 text-center text-zinc-500">
+                <p class="text-sm">No other chats yet</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- New Group Button -->
+        <div class="p-3 border-t border-zinc-800">
+            <a href="{% url 'newgrpchat' %}" class="btn btn-primary w-full text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                New Group
             </a>
         </div>
-        <div class="text-sm font-light py-1 ml-10">
-            <span class="text-white font-medium">{{ other_user.profile.name }}</span>
-            <span class="text-zinc-500">@{{ other_user.username }}</span>
-        </div>
+    </aside>
 
-        {% elif chat_group.groupchat_name %}
-        <!-- Group chat header with members -->
-        <div class="bg-zinc-900 p-3 border-b border-zinc-800 rounded-t-2xl flex-shrink-0">
-            <div class="text-center mb-2">
-                <span class="text-white font-semibold">{{ chat_group.groupchat_name }}</span>
-            </div>
-            <div>
-                {% if user == chat_group.admin %}
-                <a href="{% url 'edit_group' chat_group.groupname %}">edit </a>
+    <!-- Main Chat Area -->
+    <div class="flex-1 flex flex-col min-w-0">
+        <!-- Chat Header -->
+        <div class="h-14 px-4 border-b border-zinc-800 flex items-center justify-between bg-zinc-900 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                {% if other_user %}
+                <a href="/profile/{{ other_user.username }}/" class="flex-shrink-0">
+                    <img class="w-9 h-9 rounded-full object-cover ring-2 ring-zinc-700"
+                        src="{{ other_user.profile.profileimg.url }}" alt="Avatar">
+                </a>
+                <div>
+                    <p class="font-semibold text-sm">{{ other_user.profile.name|default:other_user.username }}</p>
+                    <p class="text-xs text-zinc-500">@{{ other_user.username }}</p>
+                </div>
+                {% elif chat_group.groupchat_name %}
+                <div
+                    class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm">{{ chat_group.groupchat_name }}</p>
+                    <div class="flex items-center gap-2">
+                        <p class="text-xs text-zinc-400">
+                            <span id="member-count">{{ chat_group.group_members.count }}</span> members
+                        </p>
+                        <div id="groupchat-members" class="flex -space-x-1">
+                            {% for member in chat_group.group_members.all %}
+                            <a href="{% url 'user_profile' member.username %}"
+                                title="{{ member.profile.name|default:member.username }}">
+                                <img src="{{ member.profile.profileimg.url }}"
+                                    class="w-6 h-6 rounded-full object-cover ring-1 ring-zinc-800 hover:ring-indigo-500 transition-all hover:z-10"
+                                    alt="{{ member.username }}" />
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+                {% else %}
+                <div
+                    class="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-semibold text-sm">Public Chat</p>
+                    <p class="text-xs text-emerald-400 flex items-center gap-1">
+                        <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                        <span id="online-count"></span> online
+                    </p>
+                </div>
                 {% endif %}
             </div>
-            <ul id="groupchat-members" class="flex justify-center gap-3 overflow-x-auto">
-                {% for member in chat_group.group_members.all %}
-                <li>
-                    <a href="/profile/{{ member.username }}/"
-                        class="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition-colors">
-                        <img src="{{ member.profile.profileimg.url }}"
-                            class="w-10 h-10 rounded-full object-cover ring-2 ring-zinc-700" />
-                        <span class="text-xs truncate max-w-[60px]">{{member.profile.name|default:member.username|slice:":8" }}</span>
-                    </a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {%else%}
-        <!-- Online count header -->
-        <div
-            class="flex justify-center items-center gap-2 text-emerald-400 bg-zinc-900 p-3 border-b border-zinc-800 rounded-t-2xl flex-shrink-0">
-            <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-            <span id="online-count"></span> online
-        </div>
-        {%endif%}
 
-        <!-- Chat messages container -->
-        <div id='chat_container' class="overflow-y-auto flex-1 p-4 min-h-0">
-            <ul id='chat_messages' class="flex flex-col gap-4 overflow-x-hidden">
+            <!-- Header Actions -->
+            <div class="flex items-center gap-2">
+                {% if chat_group.groupchat_name and user == chat_group.admin %}
+                <a href="{% url 'edit_group' chat_group.groupname %}"
+                    class="p-2 hover:bg-zinc-800 rounded-lg transition-colors" title="Edit Group">
+                    <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </a>
+                {% endif %}
+                {% if chat_group.group_members.exists and chatroom_name != 'public-chat' %}
+                <form action="{% url 'leave_chatroom' chat_group.groupname %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="p-2 hover:bg-zinc-800 rounded-lg transition-colors text-red-400"
+                        title="Leave Chat">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chat_container" class="flex-1 overflow-y-auto p-4 min-h-0">
+            <ul id="chat_messages" class="flex flex-col gap-3 overflow-x-hidden">
                 {% for message in chat_messages reversed %}
                 {% include 'rtchat/chat_message.html' %}
                 {% endfor %}
             </ul>
         </div>
 
-        <!-- Message input -->
-        <div class="p-4 border-t border-zinc-800 flex-shrink-0">
+        <!-- Message Input -->
+        <div class="p-4 border-t border-zinc-800 bg-zinc-900 flex-shrink-0">
             <form id="chat_message_form" class="flex items-center gap-3" hx-ext="ws"
                 ws-connect="/ws/chatroom/{{chatroom_name}}" ws-send
                 _="on htmx:wsAfterSend reset() me then call scrollToBottom()">
@@ -70,7 +202,10 @@
                 {{ form.body }}
                 <button type="submit"
                     class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex-shrink-0 transition-colors">
-                    Send
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
                 </button>
             </form>
         </div>
@@ -78,23 +213,33 @@
 </div>
 
 <script>
-    // Auto-scroll function
     function scrollToBottom() {
         const container = document.getElementById('chat_container');
         container.scrollTop = container.scrollHeight;
     }
 
-    // Scroll on page load
     document.addEventListener('DOMContentLoaded', function () {
         scrollToBottom();
 
-        // Watch for new messages being added to the chat
         const chatMessages = document.getElementById('chat_messages');
         const observer = new MutationObserver(function (mutations) {
             scrollToBottom();
         });
 
         observer.observe(chatMessages, { childList: true, subtree: true });
+
+        document.body.addEventListener('htmx:wsAfterMessage', function (event) {
+            console.log('WebSocket message received:', event.detail.message);
+            try {
+                const data = JSON.parse(event.detail.message);
+                console.log('Parsed data:', data);
+                if (data.type === 'redirect') {
+                    console.log('Redirecting to:', data.url);
+                    window.location.href = data.url;
+                }
+            } catch (e) {
+            }
+        });
     });
 </script>
 {% endblock %}

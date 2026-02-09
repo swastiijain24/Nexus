@@ -81,12 +81,6 @@ TEMPLATES = [
 # WSGI_APPLICATION = 'chatapp.wsgi.application'
 ASGI_APPLICATION = "chatapp.asgi.application"
 
-# CHANNEL_LAYERS={
-#     'default':{
-#         "BACKEND":"channels.layers.InMemoryChannelLayer",
-#     }
-# }
-
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -95,6 +89,14 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+
+# For development without Redis (uncomment if Redis is not available):
+# CHANNEL_LAYERS = {
+#     'default': {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer",
+#     }
+# }
 
 
 # Database

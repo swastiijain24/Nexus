@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}Sign In - Nexus{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <!-- Decorative Background -->
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="w-full max-w-md relative z-10">
+        <!-- Logo & Branding -->
+        <div class="text-center mb-8">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/25 mb-4">
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-white">Welcome Back</h1>
+            <p class="text-zinc-400 mt-2">Sign in to continue to Nexus</p>
+        </div>
+
+        <!-- Card -->
+        <div class="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-800/50 shadow-2xl p-8">
+            {% if form.non_field_errors %}
+            <div class="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg">
+                {% for error in form.non_field_errors %}
+                <p class="text-red-400 text-sm">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'account_login' %}" class="space-y-5">
+                {% csrf_token %}
+
+                <div>
+                    <label for="id_login" class="block text-sm font-medium text-zinc-300 mb-2">Email</label>
+                    <input type="email" name="login" id="id_login" placeholder="Enter your email"
+                        class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                        {% if form.login.value %}value="{{ form.login.value }}" {% endif %} required>
+                    {% if form.login.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.login.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="id_password" class="block text-sm font-medium text-zinc-300 mb-2">Password</label>
+                    <input type="password" name="password" id="id_password" placeholder="Enter your password"
+                        class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                        required>
+                    {% if form.password.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.password.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-end">
+                    <a href="{% url 'account_reset_password' %}" class="text-sm text-indigo-400 hover:text-indigo-300">
+                        Forgot password?
+                    </a>
+                </div>
+
+                {% if redirect_field_value %}
+                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+                {% endif %}
+
+                <button type="submit"
+                    class="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-500 hover:to-purple-500 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/25">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-zinc-400 text-sm">
+                    Don't have an account?
+                    <a href="{% url 'account_signup' %}" class="text-indigo-400 hover:text-indigo-300 font-medium">
+                        Sign up
+                    </a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

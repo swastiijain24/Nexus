@@ -1,0 +1,9 @@
+<div id="groupchat-members" hx-swap-oob="outerHTML" class="flex -space-x-1">
+    {% for member in chat_group.group_members.all %}
+    <a href="{% url 'user_profile' member.username %}" title="{{ member.profile.name|default:member.username }}">
+        <img src="{{ member.profile.profileimg.url }}"
+            class="w-6 h-6 rounded-full object-cover ring-1 ring-zinc-800 hover:ring-indigo-500 transition-all hover:z-10"
+            alt="{{ member.username }}" />
+    </a>
+    {% endfor %}
+</div>

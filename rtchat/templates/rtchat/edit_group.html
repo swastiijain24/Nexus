@@ -1,38 +1,113 @@
 {% extends 'base.html' %}
 
-{% block content %} 
+{% block title %}Edit {{ chat_group.groupchat_name }} - Nexus{% endblock %}
 
-<h1>Edit Chat</h1>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form }}
-
-    <div class="my-4">
-    <h2>Members</h2>
-    {% for member in chat_group.group_members.all %}
-    <div class="flex justify-between items-center">
-        <div class="flex items-center gap-2 py-2">
-            <img class="w-14 h-14 rounded-full object-cover" src="{{ member.profile.avatar }}" />
-            <div>
-                <span class="font-bold">{{ member.profile.name }}</span> 
-                <span class="text-sm font-light text-gray-600">@{{ member.username }}</span>
-            </div>
-        </div>
-        
-        {% if member != chat_group.admin %}
-        <div class="inline-block pr-4">
-            <input type="checkbox" name="remove_members" value="{{ member.id }}" class="relative p-5 cursor-pointer appearance-none rounded-md border after:absolute after:left-0 after:top-0 after:h-full after:w-full after:bg-[url('https://img.icons8.com/ffffff/32/multiply.png')] after:bg-center checked:bg-red-500 hover:ring hover:ring-gray-300 focus:outline-none" />
-        </div>
-        {% endif %}
-    </div> 
-    {% endfor %}
+{% block content %}
+<div class="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 relative overflow-hidden">
+    <!-- Decorative Background -->
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-indigo-600/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl"></div>
     </div>
 
-    <button class="mt-2" type="submit">Update</button>
-</form>
+    <!-- Edit Group Card -->
+    <div class="w-full max-w-lg relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/25 mb-4">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-white">Edit Group</h1>
+            <p class="text-zinc-400 mt-2">Manage your group settings and members</p>
+        </div>
 
-<a href="{% url 'delete_chatroom' chat_group.groupname %}" class="flex justify-end mt-4 text-gray-400 hover:text-red-500" >Delete Chatroom</a>
+        <!-- Card -->
+        <div class="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-800/50 shadow-2xl p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
 
+                <!-- Group Name -->
+                <div>
+                    <label for="id_groupchat_name" class="block text-sm font-medium text-zinc-300 mb-2">Group
+                        Name</label>
+                    {{ form.groupchat_name }}
+                </div>
 
+                <!-- Members Section -->
+                <div>
+                    <label class="block text-sm font-medium text-zinc-300 mb-3">
+                        Members ({{ chat_group.group_members.count }})
+                    </label>
+                    <div class="space-y-2 max-h-64 overflow-y-auto pr-2">
+                        {% for member in chat_group.group_members.all %}
+                        <div
+                            class="flex items-center justify-between p-3 bg-zinc-800/50 rounded-xl hover:bg-zinc-800 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <img class="w-10 h-10 rounded-full object-cover ring-2 ring-zinc-700"
+                                    src="{{ member.profile.profileimg.url }}" alt="{{ member.username }}">
+                                <div>
+                                    <p class="font-medium text-sm">{{ member.profile.name|default:member.username }}</p>
+                                    <p class="text-xs text-zinc-500">@{{ member.username }}</p>
+                                </div>
+                                {% if member == chat_group.admin %}
+                                <span
+                                    class="px-2 py-0.5 text-xs bg-indigo-600/30 text-indigo-400 rounded-full">Admin</span>
+                                {% endif %}
+                            </div>
+
+                            {% if member != chat_group.admin %}
+                            <label class="relative cursor-pointer group">
+                                <input type="checkbox" name="remove_members" value="{{ member.id }}"
+                                    class="sr-only peer">
+                                <div
+                                    class="w-8 h-8 flex items-center justify-center rounded-lg bg-zinc-700 peer-checked:bg-red-600 transition-colors">
+                                    <svg class="w-4 h-4 text-zinc-400 peer-checked:text-white group-hover:text-white"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </div>
+                            </label>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <p class="text-xs text-zinc-500 mt-2">Check users to remove them from the group</p>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit"
+                    class="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-500 hover:to-purple-500 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/25">
+                    Save Changes
+                </button>
+            </form>
+
+            <!-- Delete Group -->
+            <div class="mt-8 pt-6 border-t border-zinc-800">
+                <a href="{% url 'delete_chatroom' chat_group.groupname %}"
+                    class="flex items-center justify-center gap-2 w-full py-3 px-6 bg-zinc-800 border border-zinc-700 text-zinc-300 font-medium rounded-lg hover:bg-red-600/20 hover:border-red-600/50 hover:text-red-400 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Group
+                </a>
+            </div>
+        </div>
+
+        <!-- Back Link -->
+        <div class="text-center mt-6">
+            <a href="{% url 'chat' chat_group.groupname %}"
+                class="text-zinc-400 hover:text-white text-sm transition-colors">
+                ← Back to Chat
+            </a>
+        </div>
+    </div>
+</div>
 {% endblock %}
