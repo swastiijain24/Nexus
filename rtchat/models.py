@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from PIL import Image
 
 class GroupChat(models.Model):
-    groupname = models.CharField(max_length=128, unique=True, default=uuid.uuid4)
+    groupname = models.CharField(max_length=128, unique=True, blank=True)
     groupchat_name = models.CharField(max_length=80, null=True, blank=True)
     admin = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='groupchats')
     online_users = models.ManyToManyField(User, related_name='online_users', blank=True)
@@ -16,6 +16,11 @@ class GroupChat(models.Model):
     def __str__(self):
         return self.groupname
     
+    def save(self, *args, **kwargs):
+        if not self.groupname:
+            self.groupname=uuid.uuid4
+        super().save(*args, **kwargs)
+
     class Meta:
         ordering=['-recent_msg_at']
     

@@ -18,7 +18,7 @@ env = Env()
 Env.read_env()
 
 ENVIRONMENT = env('ENVIRONMENT', default="production")
-ENVIRONMENT = "production"
+# ENVIRONMENT = "production"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'django_htmx',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'home',
     'users',
     'rtchat',
@@ -102,22 +103,22 @@ TEMPLATES = [
 # WSGI_APPLICATION = 'chatapp.wsgi.application'
 ASGI_APPLICATION = "chatapp.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+
+if ENVIRONMENT == 'development':
+    CHANNEL_LAYERS = {
+        'default': {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(env('REDIS_URL'))],
+            },
         },
-    },
-}
-
-
-# For development without Redis (uncomment if Redis is not available):
-# CHANNEL_LAYERS = {
-#     'default': {
-#         "BACKEND": "channels.layers.InMemoryChannelLayer",
-#     }
-# }
+    }
 
 
 # Database
@@ -207,5 +208,5 @@ ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 EMAIL_PORT= 587
 EMAIL_USE_TLS= True
-DEFAULT_FROM_EMAIL = f"Nexus {env('EMAIL_ADDRESS')}"
+DEFAULT_FROM_EMAIL = f"Nexus <{env('EMAIL_ADDRESS')}>"
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
