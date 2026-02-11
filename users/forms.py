@@ -8,7 +8,7 @@ class ProfileForm(ModelForm):
         model = Profile
         exclude = ['user_id']
         widgets = {
-            'image': forms.FileInput(),
+            'profileimg': forms.FileInput(),
             'name': forms.TextInput(attrs={'placeholder': 'Name'}),
             'about': forms.Textarea(attrs={'rows': 3, 'placeholder': 'About'})
         }

@@ -23,7 +23,6 @@ ENVIRONMENT = env('ENVIRONMENT', default="production")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -53,8 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_cleanup.apps.CleanupConfig',
     'django.contrib.sites',
-    'cloudinary_storage',
-    'cloudinary',
     'django_htmx',
     'allauth',
     'allauth.account',
@@ -63,6 +60,12 @@ INSTALLED_APPS = [
     'users',
     'rtchat',
 ]
+
+if ENVIRONMENT != 'development':
+    INSTALLED_APPS += [
+        'cloudinary_storage',
+        'cloudinary',
+    ]
 
 SITE_ID = 1
 
@@ -77,7 +80,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
-
 ]
 
 ROOT_URLCONF = 'chatapp.urls'
@@ -141,8 +143,6 @@ else:
         )
     }
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -161,7 +161,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
@@ -173,13 +172,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-# STATIC_URL = 'static/'
-# STATIC_FILES_DIR=[BASE_DIR, 'static']
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
@@ -198,13 +192,11 @@ CLOUDINARY_STORAGE = {
 
 
 AUTHENTICATION_BACKENDS = [
-   
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
 
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
-    
 ]
 
 LOGIN_REDIRECT_URL = '/'

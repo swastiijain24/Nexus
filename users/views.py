@@ -25,7 +25,13 @@ def settings(request):
             form.save()
             messages.success(request, 'Profile updated successfully!')
             return redirect('settings')
-    return render(request, 'settings.html')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        form = ProfileForm(instance=request.user.profile)
+    return render(request, 'settings.html', {'form': form})
 
 @login_required 
 def emailchange(request):
