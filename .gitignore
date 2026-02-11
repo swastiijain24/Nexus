@@ -1,4 +1,8 @@
-.env
 .venv
-media
-requirements.txt
+node/
+media/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+staticfiles

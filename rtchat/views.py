@@ -1,8 +1,8 @@
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from rtchat.forms import ChatMessageForm, EditGrpChat, NewGrpChat
-from rtchat.models import GroupChat, UserChannel
+from rtchat.models import GroupChat, GroupMessage, UserChannel
 from django.contrib.auth.models import User
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -20,35 +20,13 @@ def chat_view(request, chatroom_name='public-chat'):
             raise Http404()
         
         for member in chat_group.group_members.all():
-            if other_user != request.user:
+            if member != request.user:
                 other_user=member
                 break
-            
-    channel_layer = get_channel_layer()
 
     if chat_group.groupchat_name and not chat_group.is_private:
         if request.user not in chat_group.group_members.all():
             chat_group.group_members.add(request.user)
-
-            async_to_sync(channel_layer.group_send)(
-                chatroom_name,
-                {
-                    'type': 'member_count_handler',
-                    'member_count': chat_group.group_members.count()
-                }
-            )
-
-    if chatroom_name == 'public-chat':
-        if request.user not in chat_group.group_members.all():
-            chat_group.group_members.add(request.user)
-
-            async_to_sync(channel_layer.group_send)(
-                chatroom_name,
-                {
-                    'type': 'member_count_handler',
-                    'member_count': chat_group.group_members.count()
-                }
-            )
     
     if request.htmx:
         form = ChatMessageForm(request.POST) #making a new one 
@@ -57,6 +35,7 @@ def chat_view(request, chatroom_name='public-chat'):
             message.author = request.user
             message.group = chat_group
             message.save()
+            chat_group.save()
             context = {
                 'message':message,
                 'user':request.user,
@@ -110,6 +89,7 @@ def create_newgrpchat(request):
 
     return render(request, 'rtchat/new-grpchat.html', context)
 
+@login_required
 def edit_group(request, chatroom_name):
     chat_group = GroupChat.objects.get(groupname=chatroom_name)
     if request.user != chat_group.admin:
@@ -140,18 +120,7 @@ def edit_group(request, chatroom_name):
                         user_channel.channel
                     )
                     user_channel.delete()
-            
-            if remove_members:
-                channel_layer = get_channel_layer()
-                member_count = chat_group.group_members.count()
-                async_to_sync(channel_layer.group_send)(
-                    chatroom_name, 
-                    {
-                        'type': 'member_count_handler',
-                        'member_count': member_count
-                    }
-                )
-            
+
             return redirect('edit_group', chatroom_name)
 
     context = {
@@ -160,18 +129,30 @@ def edit_group(request, chatroom_name):
     }
     return render(request, 'rtchat/edit_group.html', context)
 
+@login_required
 def delete_chatroom(request, chatroom_name):
     chat_group = get_object_or_404(GroupChat, groupname=chatroom_name )
+    # group_members = User.objects.filter(chat_groups=chat_group)
+    
     if request.user != chat_group.admin:
         raise Http404()
     
     if request.method == 'POST':
-        chat_group.delete()
+        # chat_group.delete()
+        channel_layer = get_channel_layer()
         messages.success(request, 'deleted successfully')
+        event= {
+            'type': 'user_removed_handler',
+        }
+        async_to_sync(channel_layer.group_send)(
+            chat_group.groupname, event
+        )
+        chat_group.delete()
         return redirect('home')
-        
+
     return render(request, 'rtchat/delete_chatroom.html', {'chat_group':chat_group})
 
+@login_required
 def leave_chatroom(request, chatroom_name):
     chat_group = get_object_or_404(GroupChat, groupname=chatroom_name)
 
@@ -196,13 +177,24 @@ def leave_chatroom(request, chatroom_name):
             )
             user_channel.delete()
         
-        async_to_sync(channel_layer.group_send)(
-            chatroom_name,
-            {
-                'type': 'member_count_handler',
-                'member_count': chat_group.group_members.count()
-            }
-        )
-        
         messages.success(request, 'You have left the group')
     return redirect('home')
+
+@login_required
+def file_upload(request, chatroom_name):
+    chat_group = GroupChat.objects.get(groupname=chatroom_name)
+    if request.htmx and request.FILES:
+        file = request.FILES['file']
+        message = GroupMessage.objects.create(file=file, author=request.user, group=chat_group)
+
+        channel_layer = get_channel_layer()
+
+        event={
+            'type':'message_handler',
+            'message_id':message.id,
+        }
+
+        async_to_sync(channel_layer.group_send)(
+            chatroom_name, event
+        )
+    return HttpResponse()

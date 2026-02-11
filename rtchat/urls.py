@@ -4,6 +4,7 @@ from rtchat import views
 urlpatterns =[
     path('', views.chat_view, name='home'),
     path('chatroom/<chatroom_name>', views.chat_view, name='chat'),
+    path('chatroom/file_upload/<chatroom_name>', views.file_upload, name='file_upload'),
     path('chat/newgrpchat', views.create_newgrpchat, name='newgrpchat'),
     path('chat/edit_group/<chatroom_name>', views.edit_group, name='edit_group'),
     path('chat/delete_chatroom/<chatroom_name>', views.delete_chatroom, name='delete_chatroom'),

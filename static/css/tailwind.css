@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* Form Elements */
+input:not([type="checkbox"]):not([type="file"]),
+textarea,
+select {
+    @apply w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors;
+}
+
+input[type="file"] {
+    @apply text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:cursor-pointer hover:file:bg-indigo-700;
+}
+
+label {
+    @apply block text-sm font-medium text-zinc-300 mb-2;
+}
+
+/* Buttons */
+.btn {
+    @apply px-6 py-3 font-semibold rounded-lg transition-all duration-200 cursor-pointer inline-flex items-center justify-center gap-2;
+}
+
+.btn-primary {
+    @apply bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95;
+}
+
+.btn-secondary {
+    @apply bg-zinc-800 text-white hover:bg-zinc-700 active:scale-95;
+}
+
+.btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 active:scale-95;
+}
+
+.btn-ghost {
+    @apply text-zinc-400 hover:text-white hover:bg-zinc-900;
+}
+
+/* Cards */
+.card {
+    @apply bg-zinc-900 rounded-xl border border-zinc-800 p-6;
+}
+
+/* Errors */
+.errorlist {
+    @apply list-none p-0 m-0;
+}
+
+.errorlist li {
+    @apply text-red-400 text-sm mt-1 pl-2 border-l-2 border-red-500;
+}
+
+/* Allauth overrides */
+.allauth a {
+    @apply text-indigo-400 hover:text-indigo-300 underline underline-offset-2;
+}
+
+.allauth .helptext {
+    @apply text-zinc-500 text-sm mt-2 block;
+}
+
+.allauth form[action="/accounts/signup/"] ul:not(.errorlist) {
+    @apply hidden;
+}
+
+/* Enhanced Auth Form Styles */
+.allauth h1,
+.allauth h2 {
+    @apply text-xl font-semibold text-white mb-2;
+}
+
+.allauth p {
+    @apply text-zinc-400 text-sm mb-6;
+}
+
+.allauth form {
+    @apply space-y-5 w-full;
+}
+
+.allauth input:not([type="checkbox"]):not([type="file"]),
+.allauth textarea,
+.allauth select {
+    @apply w-full max-w-full bg-zinc-800/50 border-zinc-700 focus:bg-zinc-800;
+}
+
+.allauth button[type="submit"],
+.allauth input[type="submit"] {
+    @apply w-full max-w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg cursor-pointer hover:from-indigo-500 hover:to-purple-500 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/25;
+}
+
+.allauth hr {
+    @apply border-zinc-800 my-6;
+}
+
+.allauth .form-group {
+    @apply space-y-1;
+}
+
+.allauth input[type="checkbox"] {
+    @apply w-4 h-4 rounded border-zinc-700 bg-zinc-800 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer;
+}
+
+.allauth label:has(input[type="checkbox"]) {
+    @apply flex items-center gap-2 text-zinc-400 cursor-pointer;
+}
+
+/* Alert colors */
+.alert-info {
+    @apply bg-blue-600;
+}
+
+.alert-success {
+    @apply bg-green-600;
+}
+
+.alert-warning {
+    @apply bg-amber-600;
+}
+
+.alert-danger {
+    @apply bg-red-600;
+}

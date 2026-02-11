@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if chat_group.groupchat_name %}{{ chat_group.groupchat_name }}{% elif other_user %}{{
-other_user.username }}{% else %}Public Chat{% endif %} - Nexus{% endblock %}
+{% block title %}{% if chat_group.groupchat_name %}{{ chat_group.groupchat_name }}
+{% elif other_user%}{{other_user.username}}{% else %}Public Chat{% endif %} - Nexus{% endblock %}
 
 {% block content %}
 <div class="flex h-[calc(100vh-4rem)]">
@@ -40,45 +40,49 @@ other_user.username }}{% else %}Public Chat{% endif %} - Nexus{% endblock %}
                 <div class="flex-1 min-w-0">
                     <p class="font-medium truncate">Public Chat</p>
                     <p class="text-xs text-zinc-500 truncate">Everyone can join</p>
+                    <!-- <p class="text-xs text-zinc-500 truncate"><span id="online-count"></span> online</p> -->
                 </div>
             </a>
 
             <!-- User's Chat Groups -->
-            {% for group in user_chat_groups %}
+            {% for group in user_chat_groups reversed %}
             {% if group.groupname != 'public-chat' %}
-            <a href="{% url 'chat' group.groupname %}"
-                class="flex items-center gap-3 p-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 {% if chatroom_name == group.groupname %}bg-zinc-800{% endif %}">
-                {% if group.is_private %}
-                <!-- Private Chat - Show other user's avatar -->
-                {% for member in group.group_members.all %}
-                {% if member != user %}
-                <img src="{{ member.profile.profileimg.url }}"
-                    class="w-10 h-10 rounded-full object-cover flex-shrink-0">
-                {% endif %}
-                {% endfor %}
-                <div class="flex-1 min-w-0">
+            <div id="user_groups">
+                <a href="{% url 'chat' group.groupname %}"
+                    class="flex items-center gap-3 p-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 {% if chatroom_name == group.groupname %}bg-zinc-800{% endif %}">
+                    {% if group.is_private %}
+                    <!-- Private Chat - Show other user's avatar -->
                     {% for member in group.group_members.all %}
                     {% if member != user %}
-                    <p class="font-medium truncate">{{ member.profile.name|default:member.username }}</p>
-                    <p class="text-xs text-zinc-500 truncate">@{{ member.username }}</p>
+                    <img src="{{ member.profile.profileimg.url }}"
+                        class="w-10 h-10 rounded-full object-cover flex-shrink-0">
                     {% endif %}
                     {% endfor %}
-                </div>
-                {% else %}
-                <!-- Group Chat -->
-                <div
-                    class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="font-medium truncate">{{ group.groupchat_name }}</p>
-                    <p class="text-xs text-zinc-500 truncate">{{ group.group_members.count }} members</p>
-                </div>
-                {% endif %}
-            </a>
+                    <div class="flex-1 min-w-0">
+                        {% for member in group.group_members.all %}
+                        {% if member != user %}
+                        <p class="font-medium truncate">{{ member.profile.name|default:member.username }}</p>
+                        <p class="text-xs text-zinc-500 truncate">@{{ member.username }}</p>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- Group Chat -->
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium truncate">{{ group.groupchat_name }}</p>
+
+
+                    </div>
+                    {% endif %}
+                </a>
+            </div>
             {% endif %}
             {% empty %}
             <div class="p-4 text-center text-zinc-500">
@@ -111,6 +115,10 @@ other_user.username }}{% else %}Public Chat{% endif %} - Nexus{% endblock %}
                 <div>
                     <p class="font-semibold text-sm">{{ other_user.profile.name|default:other_user.username }}</p>
                     <p class="text-xs text-zinc-500">@{{ other_user.username }}</p>
+                    <p class="text-xs text-emerald-400 flex items-center gap-1">
+                        <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                        <span id="online-count"></span> online
+                    </p>
                 </div>
                 {% elif chat_group.groupchat_name %}
                 <div
@@ -123,10 +131,7 @@ other_user.username }}{% else %}Public Chat{% endif %} - Nexus{% endblock %}
                 <div>
                     <p class="font-semibold text-sm">{{ chat_group.groupchat_name }}</p>
                     <div class="flex items-center gap-2">
-                        <p class="text-xs text-zinc-400">
-                            <span id="member-count">{{ chat_group.group_members.count }}</span> members
-                        </p>
-                        <div id="groupchat-members" class="flex -space-x-1">
+                        <!-- <div id="groupchat-members" class="flex -space-x-1">
                             {% for member in chat_group.group_members.all %}
                             <a href="{% url 'user_profile' member.username %}"
                                 title="{{ member.profile.name|default:member.username }}">
@@ -135,7 +140,11 @@ other_user.username }}{% else %}Public Chat{% endif %} - Nexus{% endblock %}
                                     alt="{{ member.username }}" />
                             </a>
                             {% endfor %}
-                        </div>
+                        </div> -->
+                        <p class="text-xs text-emerald-400 flex items-center gap-1">
+                            <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                            <span id="online-count"></span> online
+                        </p>
                     </div>
 
                 </div>
@@ -209,13 +218,33 @@ other_user.username }}{% else %}Public Chat{% endif %} - Nexus{% endblock %}
                 </button>
             </form>
         </div>
+        <!-- file input  -->
+        <div class="p-4 border-t border-zinc-800 bg-zinc-900 flex-shrink-0">
+            <!-- not sent through ws bcs they only send string so then will have to serialize -->
+            <form id="file_form" class="flex items-center gap-3" enctype="multipart/form-data"
+                hx-post="{% url 'file_upload' chatroom_name %}" hx-target="#chat_messages" hx-swap="beforeend"
+                _="on htmx:afterRequest reset() me then call scrollToBottom(100)">
+                {% csrf_token %}
+                <input type="file" name="file" id="file_input">
+                <button type="submit"
+                    class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex-shrink-0 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+
     </div>
 </div>
 
 <script>
-    function scrollToBottom() {
-        const container = document.getElementById('chat_container');
-        container.scrollTop = container.scrollHeight;
+    function scrollToBottom(time = 0) {
+        setTimeout(function () {
+            const container = document.getElementById('chat_container');
+            container.scrollTop = container.scrollHeight;
+        }, time);
     }
 
     document.addEventListener('DOMContentLoaded', function () {
