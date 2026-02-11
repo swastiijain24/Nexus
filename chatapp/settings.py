@@ -36,13 +36,10 @@ if ENVIRONMENT == 'development':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
-
-INTERNAL_IPS = (
-    '127.0.0.1',
-    'localhost:8000'
-)
-
+if ENVIRONMENT == 'development':
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+else:
+    ALLOWED_HOSTS = [env('RENDER_EXTERNAL_HOSTNAME')]
 
 # Application definition
 
@@ -115,7 +112,7 @@ else:
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
-                "hosts": [(env('REDIS_URL'))],
+                "hosts": [env('REDIS_URL')],
             },
         },
     }
@@ -124,16 +121,26 @@ else:
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'chatapp',
-        'USER': 'root',
-        'PASSWORD': env('DATABASE_PASSWORD'),
-        'HOST': '127.0.0.1',
-        'PORT':'3306',
+import dj_database_url
+
+if ENVIRONMENT == 'development':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'chatapp',
+            'USER': 'root',
+            'PASSWORD': env('DATABASE_PASSWORD'),
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=env('DATABASE_URL')
+        )
+    }
+
 
 
 # Password validation
@@ -176,17 +183,19 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = '/media/'
 
 if ENVIRONMENT == 'development':
-    MEDIA_ROOT= os.path.join(BASE_DIR, 'media')
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    CLOUDINARY_STORAGE={
-        'CLOUDINARY_URL': env('CLOUDINARY_URL')
-    }
+
+CLOUDINARY_STORAGE = {
+    'CLOUDINARY_URL': env('CLOUDINARY_URL')
+}
+
 
 AUTHENTICATION_BACKENDS = [
    
@@ -210,3 +219,12 @@ EMAIL_PORT= 587
 EMAIL_USE_TLS= True
 DEFAULT_FROM_EMAIL = f"Nexus <{env('EMAIL_ADDRESS')}>"
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
+
+
+if ENVIRONMENT != 'development':
+    CSRF_TRUSTED_ORIGINS = [f"https://{env('RENDER_EXTERNAL_HOSTNAME')}"]
+
+if ENVIRONMENT != 'development':
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
