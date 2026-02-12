@@ -28,15 +28,12 @@ class GroupMessage(models.Model):
 
     @property
     def is_image(self):
-        try:
-            self.file.seek(0)
-            image = Image.open(self.file)
-            image.verify()
-            self.file.seek(0)
-            return True
-        except:
-            self.file.seek(0) #Reading a file moves the pointer, seek(0) rewinds it so others can read again.
-            return False  
+        if not self.file:
+            return False
+        return self.file.name.lower().endswith(
+            ('.png', '.jpg', '.jpeg', '.gif', '.webp')
+        )
+
         
     @property
     def filename(self):
