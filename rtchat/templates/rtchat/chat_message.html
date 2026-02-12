@@ -2,16 +2,20 @@
 <li class="flex justify-end w-full">
     <div class="max-w-[75%]">
         <div class="bg-indigo-600 text-white rounded-2xl rounded-br-sm px-4 py-3 break-words">
-            {% if message.body %}
+            {% if message.file %}
+
+            {% if message.is_image %}
+            <img class="max-w-72 min-w-8 rounded-lg" src="{{ message.file.url }}" alt="image">
+            {% else %}
+            <a class="cursor-pointer italic hover:underline" href="{{ message.file.url }}" download>
+                🔗 {{ message.filename }}
+            </a>
+            {% endif %}
+
+            {% elif message.body %}
             <span>{{ message.body }}</span>
-            {% elif message.file %}
-            {%if message.is_image %}
-            <img class="max-w-72 min-w-8" src="{{message.file.url}}" alt="">
-            {% else%}
-            <a class="cursor-pointer italic hover:underline" href="{{ message.file.url }}" download>🔗
-                {{message.filename}}</a>
-            {%endif%}
-            {%endif%}
+            {% endif %}
+
 
         </div>
     </div>
@@ -24,16 +28,20 @@
                 src="{{ message.author.profile.profileimg.url }}" alt="Avatar">
         </a>
         <div class="bg-zinc-800 text-white rounded-2xl rounded-bl-sm px-4 py-3 break-words min-w-0">
-            {% if message.body %}
+            {% if message.file %}
+
+            {% if message.is_image %}
+            <img class="max-w-72 min-w-8 rounded-lg" src="{{ message.file.url }}" alt="image">
+            {% else %}
+            <a class="cursor-pointer italic hover:underline" href="{{ message.file.url }}" download>
+                🔗 {{ message.filename }}
+            </a>
+            {% endif %}
+
+            {% elif message.body %}
             <span>{{ message.body }}</span>
-            {% elif message.file %}
-            {%if message.is_image %}
-            <img class="max-w-72 min-w-8" src="{{message.file.url}}" alt="">
-            {% else%}
-            <a class="cursor-pointer italic hover:underline" href="{{ message.file.url }}" download>🔗
-                {{message.filename}}</a>
-            {%endif%}
-            {%endif%}
+            {% endif %}
+
         </div>
     </div>
     <div class="text-sm font-light py-1 ml-10">
