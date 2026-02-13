@@ -2,7 +2,7 @@ import os
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
-from PIL import Image
+import mimetypes
 
 class GroupChat(models.Model):
     groupname = models.CharField(max_length=128, unique=True,default=uuid.uuid4)
@@ -26,15 +26,33 @@ class GroupMessage(models.Model):
     file = models.FileField(upload_to='files/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
     @property
     def is_image(self):
         if not self.file:
             return False
-        return self.file.name.lower().endswith(
-            ('.png', '.jpg', '.jpeg', '.gif', '.webp')
-        )
 
-        
+        file_name = self.file.name.lower()
+
+        if file_name.endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+            return True
+
+        try:
+            content_type = getattr(self.file.file, 'content_type', None)
+            if content_type:
+                if content_type.startswith('image/'):
+                    return True
+
+            mime_type, _ = mimetypes.guess_type(file_name)
+            if mime_type and mime_type.startswith('image/'):
+                return True
+        except Exception:
+            pass
+
+        if "/image/upload/" in self.file.url:
+            return True
+        return False
+
     @property
     def filename(self):
         if self.file:
